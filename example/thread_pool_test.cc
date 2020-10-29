@@ -11,9 +11,7 @@ void threadTest()
 
 int main()
 {
-    momoko::ThreadPool tp;
-    tp.start();
-
+    momoko::ThreadPool tp(4);
     for (int i = 0; i < 10; ++i)
     {
         tp.addTask(threadTest);

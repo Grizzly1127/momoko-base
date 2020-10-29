@@ -17,11 +17,7 @@ class ThreadPool : noncopyable
 public:
     using Task = std::function<void()>;
 
-    ThreadPool(size_t max_thread_size = 4)
-        : max_thread_size_(max_thread_size),
-          running_(false)
-    {}
-
+    ThreadPool(size_t max_thread_size = 4);
     ~ThreadPool()
     {
         if (running_)
@@ -30,9 +26,10 @@ public:
         }
     }
 
-    void start();
     void stop();
+
     void addTask(const Task&);
+    void addTask(Task&&);
 
     size_t queueSize() const;
 

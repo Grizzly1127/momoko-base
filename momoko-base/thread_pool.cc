@@ -6,10 +6,10 @@
 namespace momoko
 {
 
-void ThreadPool::start()
+ThreadPool::ThreadPool(size_t max_thread_size)
+    : max_thread_size_(max_thread_size),
+      running_(true)
 {
-    assert(threads_.empty());
-    running_ = true;
     threads_.reserve(max_thread_size_);
     for (size_t i = 0; i < max_thread_size_; ++i)
     {
@@ -49,6 +49,14 @@ void ThreadPool::addTask(const ThreadPool::Task& task)
     tasks_.push(task);
     cond_.notify_one();
 }
+
+void ThreadPool::addTask(Task&& task)
+{
+    std::unique_lock<std::mutex> guard(mutex_);
+    tasks_.push(std::move(task));
+    cond_.notify_one();
+}
+
 
 ThreadPool::Task ThreadPool::take()
 {
