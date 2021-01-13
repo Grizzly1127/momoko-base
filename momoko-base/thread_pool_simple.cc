@@ -1,4 +1,4 @@
-#include "momoko-base/thread_pool.h"
+#include "momoko-base/thread_pool_simple.h"
 
 #include <assert.h>
 #include <iostream>
@@ -6,19 +6,19 @@
 namespace momoko
 {
 
-ThreadPool::ThreadPool(size_t max_thread_size)
+ThreadPoolSimple::ThreadPoolSimple(size_t max_thread_size)
     : max_thread_size_(max_thread_size),
       running_(true)
 {
     threads_.reserve(max_thread_size_);
     for (size_t i = 0; i < max_thread_size_; ++i)
     {
-        threads_.emplace_back(new momoko::Thread(std::bind(&ThreadPool::threadLoop, this)));
+        threads_.emplace_back(new momoko::Thread(std::bind(&ThreadPoolSimple::threadLoop, this)));
         threads_[i]->start();
     }
 }
 
-void ThreadPool::stop()
+void ThreadPoolSimple::stop()
 {
     {
         std::unique_lock<std::mutex> guard(mutex_);
@@ -31,7 +31,7 @@ void ThreadPool::stop()
     }
 }
 
-void ThreadPool::threadLoop()
+void ThreadPoolSimple::threadLoop()
 {
     while (running_)
     {
@@ -43,14 +43,14 @@ void ThreadPool::threadLoop()
     }
 }
 
-void ThreadPool::addTask(const ThreadPool::Task& task)
+void ThreadPoolSimple::addTask(const ThreadPoolSimple::Task& task)
 {
     std::unique_lock<std::mutex> guard(mutex_);
     tasks_.push(task);
     cond_.notify_one();
 }
 
-void ThreadPool::addTask(Task&& task)
+void ThreadPoolSimple::addTask(Task&& task)
 {
     std::unique_lock<std::mutex> guard(mutex_);
     tasks_.push(std::move(task));
@@ -58,7 +58,7 @@ void ThreadPool::addTask(Task&& task)
 }
 
 
-ThreadPool::Task ThreadPool::take()
+ThreadPoolSimple::Task ThreadPoolSimple::take()
 {
     std::unique_lock<std::mutex> guard(mutex_);
     while (tasks_.empty() && running_)
@@ -75,7 +75,7 @@ ThreadPool::Task ThreadPool::take()
     return task;
 }
 
-size_t ThreadPool::queueSize() const
+size_t ThreadPoolSimple::queueSize() const
 {
     std::unique_lock<std::mutex> guard(mutex_);
     return tasks_.size();

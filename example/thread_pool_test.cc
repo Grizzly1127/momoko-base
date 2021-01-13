@@ -1,4 +1,4 @@
-#include "momoko-base/thread_pool.h"
+#include "momoko-base/thread_pool_simple.h"
 
 #include <iostream>
 
@@ -11,7 +11,7 @@ void threadTest()
 
 int main()
 {
-    momoko::ThreadPool tp(4);
+    momoko::ThreadPoolSimple tp(4);
     for (int i = 0; i < 10; ++i)
     {
         tp.addTask(threadTest);

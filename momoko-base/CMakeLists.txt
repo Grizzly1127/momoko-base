@@ -1,6 +1,6 @@
 set(SOURCE_FILE
     thread.cc
-    thread_pool.cc
+    thread_pool_simple.cc
     )
 
 add_library(momoko STATIC ${SOURCE_FILE})
