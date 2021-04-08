@@ -1,18 +1,17 @@
-#ifndef MOMOKOBASE_THREAD_POOL_H
-#define MOMOKOBASE_THREAD_POOL_H
+#ifndef SERVICE_STATISTIC_ANALYSIS_SYSTEM_MAIN_UI_SYSTEM_COMMON_THREAD_POOL_H
+#define SERVICE_STATISTIC_ANALYSIS_SYSTEM_MAIN_UI_SYSTEM_COMMON_THREAD_POOL_H
 
-#include "noncopyable.h"
-#include <iostream>
-#include <vector>
+#include <atomic>
+#include <condition_variable>
+#include <functional>
+#include <future>
+#include <mutex>
 #include <queue>
 #include <thread>
-#include <atomic>
-#include <future>
-#include <functional>
-#include <mutex>
-#include <condition_variable>
+#include <vector>
+#include "noncopyable.h"
 
-namespace momoko {
+namespace common {
 
 #define THREADPOOL_MAX_NUM 32
 //#define THREADPOOL_AUTO_GROW
@@ -31,12 +30,16 @@ class ThreadPool : noncopyable {
     // 条件变量
     std::condition_variable cond_;
     // 线程池当前运行状态
-    std::atomic<bool> running_{true};
+    std::atomic<bool> running_;
     // 空闲线程数
-    std::atomic<int> idle_thread_num_{0};
+    std::atomic<int> idle_thread_num_;
 
 public:
-    inline ThreadPool(unsigned short size = 4) { addThread(size); }
+    explicit ThreadPool(int16_t size = 4)
+        : running_ { true }
+        , idle_thread_num_ { 0 } {
+        addThread(size);
+    }
 
     inline ~ThreadPool() {
         running_ = false;
@@ -66,7 +69,7 @@ public:
         {
             // 添加任务到队列中
             std::unique_lock<std::mutex> guard(mutex_);
-            tasks_.emplace([task](){
+            tasks_.emplace([task]() {
                 (*task)();
             });
         }
@@ -82,19 +85,19 @@ public:
     // 空闲线程数
     int getIdleThreadNum() { return idle_thread_num_; }
     // 当前总线程数
-    int getThreadNum() { return static_cast<int>(threads_.size()); }
+    int getThreadNum() { return threads_.size(); }
 
 #ifdef THREADPOOL_AUTO_GROW
 // 如果未定义自动增长，由用户自行决定是否增加线程
 private:
 #endif // !THREADPOOL_AUTO_GROW
-    void addThread(unsigned short size) {
+    void addThread(int16_t size) {
         for (; threads_.size() < THREADPOOL_MAX_NUM && size > 0; --size) {
-            threads_.emplace_back([this]{
+            threads_.emplace_back([this] {
                 while (running_) {
                     Task task;
                     {
-                        std::unique_lock<std::mutex> guard{mutex_};
+                        std::unique_lock<std::mutex> guard(mutex_);
                         // 等待任务的到来
                         this->cond_.wait(guard, [this] {
                             return !running_ || !tasks_.empty();
@@ -115,6 +118,6 @@ private:
     }
 };
 
-} // namespace momoko
+} // namespace common
 
-#endif // MOMOKOBASE_THREAD_POOL_SIMPLE_H
+#endif // SERVICE_STATISTIC_ANALYSIS_SYSTEM_MAIN_UI_SYSTEM_COMMON_THREAD_POOL_H

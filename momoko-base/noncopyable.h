@@ -1,12 +1,10 @@
-#ifndef MOMOKOBASE_NONCOPYABLE_H
-#define MOMOKOBASE_NONCOPYABLE_H
+#ifndef SERVICE_STATISTIC_ANALYSIS_SYSTEM_MAIN_UI_SYSTEM_COMMON_NONCOPYABLE_H
+#define SERVICE_STATISTIC_ANALYSIS_SYSTEM_MAIN_UI_SYSTEM_COMMON_NONCOPYABLE_H
 
-namespace momoko
-{
+namespace common {
 
-class noncopyable
-{
-public:
+class noncopyable {
+private:
     noncopyable(const noncopyable&) = delete;
     void operator=(const noncopyable&) = delete;
 protected:
@@ -14,6 +12,6 @@ protected:
     ~noncopyable() = default;
 };
 
-} // namespace momoko
+} // namespace common
 
-#endif // MOMOKOBASE_NONCOPYABLE_H
+#endif // SERVICE_STATISTIC_ANALYSIS_SYSTEM_MAIN_UI_SYSTEM_COMMON_NONCOPYABLE_H
